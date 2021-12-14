@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Tinyfy API Key
+# To get API Key, you need to create account at TinyPNG
+KEY=""
+
+I_DIR="$(pwd)"
+O_DIR="$(pwd)/output"
+rm -rf $O_DIR
+mkdir $O_DIR
+
+
+for entry in "${I_DIR}"/*
+do
+
+  echo "input : ${entry}"
+  # upload file to compress
+  entryResult="$(curl -s https://api.tinify.com/shrink --user api:$KEY --data-binary @$entry --dump-header /dev/stdout | grep location | sed 's#location: https://api.tinify.com/output/##g' | tr -d '[:space:]')"
+  
+  echo "output : ${entryResult}..."
+
+  # download file
+  entryOutput="${O_DIR}/$(echo $entry | sed 's/.*\///g')"
+
+  curl "https://api.tinify.com/output/${entryResult}" --user api:$KEY --output "${entryOutput}"
+
+  echo "final : ${entryOutput}"
+
+done
+
+
